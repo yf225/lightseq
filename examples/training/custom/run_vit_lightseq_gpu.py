@@ -23,6 +23,8 @@ from dataclasses import dataclass
 from lightseq.training import LSCrossEntropyLayer, LSAdam
 from lightseq.training.ops.pytorch.transformer import LSTransformerEncoder
 
+from torch.nn.parallel import DistributedDataParallel
+
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -237,6 +239,7 @@ if __name__ == "__main__":
         prefetch_factor=2,
     )
     model = create_model()
+    model = DistributedDataParallel(model, device_ids=[args.local_rank])
     loss_fn = create_criterion()
     opt = LSAdam(model.parameters(), lr=1e-5)
 
