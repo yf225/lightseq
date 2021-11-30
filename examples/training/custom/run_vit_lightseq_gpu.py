@@ -21,7 +21,7 @@ import os
 from dataclasses import dataclass
 
 from lightseq.training import LSCrossEntropyLayer, LSAdam
-from lightseq.training.ops.pytorch import LSTransformerEncoder
+from lightseq.training.ops.pytorch.transformer import LSTransformerEncoder
 
 
 import argparse
