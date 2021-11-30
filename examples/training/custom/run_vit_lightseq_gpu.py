@@ -150,7 +150,7 @@ class LSVisionTransformer(torch.nn.Module):
                 patch_size=config.patch_size,
                 in_chans=config.in_chans,
                 embedding_dim=config.hidden_size,
-                local_rank=config.local_rank,
+                local_rank=-1,
             )
         )
         return emb
@@ -179,7 +179,7 @@ def create_model():
         pre_layer_norm=True,  # pre layer norm or post
         activation_fn="gelu",  # relu or gelu
         fp16=True,
-        local_rank=0,
+        local_rank=-1,
         img_size=img_size,
         patch_size=patch_size,
         in_chans=3,
@@ -194,7 +194,7 @@ def create_criterion():
     ce_config = LSCrossEntropyLayer.get_config(
         epsilon=0.0,
         fp16=True,
-        local_rank=0,
+        local_rank=-1,
         max_batch_tokens=((img_size // patch_size) ** 2) * args.micro_batch_size,
         padding_idx=0,
     )

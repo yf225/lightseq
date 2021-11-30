@@ -19,7 +19,7 @@ class LSTransformer(nn.Module):
         print("Lightseq Transformer config is ", self.config.__dict__)
 
         if self.config.local_rank >= 0:
-            torch.cuda.set_device(self.config.local_rank)
+            torch.cuda.self.config.local_rank)
 
         self.build_model(self.config)
 
