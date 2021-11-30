@@ -251,7 +251,7 @@ if __name__ == "__main__":
     start_time = time.time()
     for step, (batch, target) in enumerate(dataloader_train):
         output = model(batch)
-        loss, _ = loss_fn(output.contiguous(), target)
+        loss, _ = loss_fn(output, target)
         loss.backward()
         opt.step()
         step_duration_list.append(time.time() - start_time)
