@@ -134,6 +134,7 @@ class LSVisionTransformer(torch.nn.Module):
             img_size: int
             patch_size: int
             in_chans: int
+            padding_idx: int  # value doesn't matter
 
         return Config(**kwargs)
 
@@ -182,6 +183,7 @@ def create_model():
         img_size=img_size,
         patch_size=patch_size,
         in_chans=3,
+        padding_idx=1,
     )
     model = LSVisionTransformer(transformer_config)
     model.to(dtype=torch.half, device=torch.device("cuda:0"))
