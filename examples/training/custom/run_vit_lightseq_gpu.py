@@ -83,6 +83,8 @@ def create_criterion():
         epsilon=0.0,
         fp16=True,
         local_rank=0,
+        max_batch_tokens=((image_size // patch_size) ** 2) * args.micro_batch_size,
+        padding_idx=0,
     )
     loss_fn = LSCrossEntropyLayer(ce_config)
     loss_fn.to(dtype=torch.half, device=torch.device("cuda:0"))
