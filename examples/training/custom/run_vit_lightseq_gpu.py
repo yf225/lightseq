@@ -22,6 +22,7 @@ from dataclasses import dataclass
 
 from lightseq.training import LSCrossEntropyLayer, LSAdam
 from lightseq.training.ops.pytorch.transformer import LSTransformerEncoder
+from timm.data import create_loader
 
 from torch.nn.parallel import DistributedDataParallel as DDP
 
