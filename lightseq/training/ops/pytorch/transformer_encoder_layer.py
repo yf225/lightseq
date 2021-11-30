@@ -96,8 +96,6 @@ class LSTransformerEncoderLayer(nn.Module):
         self.config.layer_id = LSTransformerEncoderLayer.layer_id
         LSTransformerEncoderLayer.layer_id = LSTransformerEncoderLayer.layer_id + 1
 
-        print("Lightseq Transformer config is ", self.config.__dict__)
-
         if self.config.local_rank >= 0:
             torch.cuda.set_device(self.config.local_rank)
 
