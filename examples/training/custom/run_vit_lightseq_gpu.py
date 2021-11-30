@@ -9,6 +9,7 @@ rm -rf ./lightseq || true
 git clone https://github.com/yf225/lightseq.git -b vit_dummy_data
 cd ./lightseq
 
+export PYTHONPATH=/fsx/users/willfeng/repos:${PYTHONPATH}
 python -m torch.distributed.launch --nproc_per_node=4 \
 examples/training/custom/run_vit_lightseq_gpu.py --micro_batch_size=2
 """
@@ -225,12 +226,20 @@ if __name__ == "__main__":
 
     global_batch_size = args.micro_batch_size * torch.distributed.get_world_size()
     dataset_train = VitDummyDataset(global_batch_size * 10, img_size, num_classes)
-    dataloader_train = torch.utils.data.DataLoader(
+    # dataloader_train = torch.utils.data.DataLoader(
+    #     dataset_train,
+    #     batch_size=args.micro_batch_size,
+    #     num_workers=2,
+    #     pin_memory=True,
+    #     prefetch_factor=2,
+    # )
+    dataloader_train = create_loader(
         dataset_train,
-        batch_size=args.micro_batch_size,
-        num_workers=2,
-        pin_memory=True,
-        prefetch_factor=2,
+        input_size=(3, img_size, img_size),
+        batch_size=args.micro_batch_size * torch.distributed.get_world_size(),
+        is_training=True,
+        no_aug=True,
+        fp16=True,
     )
     model = create_model()
     if args.distributed:
