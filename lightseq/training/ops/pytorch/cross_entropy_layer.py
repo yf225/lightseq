@@ -117,6 +117,6 @@ class LSCrossEntropyLayer(nn.Module):
                 f"Batch token numbers {bs * sl} exceeds the limit {self.config.max_batch_tokens}."
             )
         loss, nll_loss = LSCrossEntropyFunc.apply(
-            self.config, inputs.contiguous(), targets, **kwargs
+            self.config, inputs, targets, **kwargs
         )
         return loss, nll_loss
