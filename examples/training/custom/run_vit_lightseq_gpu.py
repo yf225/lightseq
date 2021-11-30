@@ -142,7 +142,7 @@ class LSVisionTransformer(torch.nn.Module):
 
         self.encoder = self.build_encoder(config, encoder_embed_tokens)
         self.norm = torch.nn.LayerNorm(config.hidden_size, eps=1e-6)
-        self.head = nn.Linear(config.hidden_size, config.num_classes)
+        self.head = torch.nn.Linear(config.hidden_size, config.num_classes)
 
     def build_embedding(self, config):
         emb = PatchEncoder(
