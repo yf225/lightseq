@@ -1,3 +1,18 @@
+"""
+On AWS GPU node
+
+conda activate torch-1.10-py38
+pip install lightseq fairseq sacremoses
+
+cd /fsx/users/willfeng/repos
+rm -rf ./lightseq || true
+git clone https://github.com/yf225/lightseq.git
+cd ./lightseq
+
+# TODO: how to get DP running?
+python3 run_vit_lightseq_gpu.py
+"""
+
 import torch
 
 from transformers import BertTokenizer
