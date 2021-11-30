@@ -19,7 +19,7 @@ import time
 import statistics
 import os
 
-from lightseq.training import LSTransformer, LSCrossEntropyLayer, LSAdam
+from lightseq.training import LSVisionTransformer, LSCrossEntropyLayer, LSAdam
 
 
 import argparse
@@ -70,8 +70,6 @@ def create_model():
         activation_fn="gelu",  # relu or gelu
         fp16=True,
         local_rank=0,
-        vocab_size=(image_size // patch_size) ** 2,
-        padding_idx=0,
     )
     model = LSTransformer(transformer_config)
     model.to(dtype=torch.half, device=torch.device("cuda:0"))
