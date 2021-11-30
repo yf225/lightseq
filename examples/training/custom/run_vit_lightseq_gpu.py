@@ -227,7 +227,7 @@ if __name__ == "__main__":
     dataset_train = VitDummyDataset(global_batch_size * 10, img_size, num_classes)
     dataloader_train = torch.utils.data.DataLoader(
         dataset_train,
-        batch_size=global_batch_size,
+        batch_size=args.micro_batch_size,
         num_workers=2,
         pin_memory=True,
         prefetch_factor=2,
