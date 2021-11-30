@@ -159,8 +159,6 @@ class LSVisionTransformer(torch.nn.Module):
     def forward(self, src_tokens):
         encoder_out, _ = self.encoder(src_tokens)
         ret = self.norm(encoder_out)
-        print("ret.shape: ", ret.shape)
-        print("ret[:, 0].shape: ", ret[:, 0].shape)
         ret = self.head(ret[:, 0])
         return ret
 
@@ -257,12 +255,10 @@ if __name__ == "__main__":
     start_time = time.time()
     for step, (batch, target) in enumerate(dataloader_train):
         output = model(batch)
-        print("output.shape: ", output.shape)
-        print("target.shape: ", target.shape)
         loss = loss_fn(output, target)
         loss.backward()
         opt.step()
         step_duration_list.append(time.time() - start_time)
         start_time = time.time()
 
-    print(statistics.median(step_duration_list))
+    print("micro_batch_size: {}, mean step time: {}".format(args.micro_batch_size, statistics.median(step_duration_list)))
