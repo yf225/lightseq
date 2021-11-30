@@ -44,7 +44,7 @@ class VitDummyDataset(torch.utils.data.Dataset):
 def create_model():
     hidden_size = 1280
     transformer_config = LSTransformer.get_config(
-        model="vit-h/16",
+        model="transformer-big",
         nhead=16,  # number of heads in attention
         hidden_size=hidden_size,  # size of transformer hidden layers
         num_encoder_layer=32,
