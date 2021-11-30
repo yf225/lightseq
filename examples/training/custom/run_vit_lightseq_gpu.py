@@ -261,4 +261,5 @@ if __name__ == "__main__":
         step_duration_list.append(time.time() - start_time)
         start_time = time.time()
 
-    print("micro_batch_size: {}, mean step time: {}".format(args.micro_batch_size, statistics.median(step_duration_list)))
+    if args.local_rank == 0:
+        print("micro_batch_size: {}, median step time: {}".format(args.micro_batch_size, statistics.median(step_duration_list)))
