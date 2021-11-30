@@ -251,6 +251,9 @@ if __name__ == "__main__":
     start_time = time.time()
     for step, (batch, target) in enumerate(dataloader_train):
         output = model(batch).contiguous()
+        target = target.contiguous()
+        print("output.shape: ", output.shape)
+        print("target.shape: ", target.shape)
         loss, _ = loss_fn(output, target)
         loss.backward()
         opt.step()
