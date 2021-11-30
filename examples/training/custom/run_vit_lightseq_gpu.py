@@ -239,7 +239,7 @@ if __name__ == "__main__":
         prefetch_factor=2,
     )
     model = create_model()
-    model = DistributedDataParallel(model, device_ids=[args.local_rank])
+    model = DistributedDataParallel(model)
     loss_fn = create_criterion()
     opt = LSAdam(model.parameters(), lr=1e-5)
 
