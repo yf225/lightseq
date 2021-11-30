@@ -163,7 +163,8 @@ class LSVisionTransformer(torch.nn.Module):
         encoder_out, _ = self.encoder(src_tokens)
         ret = self.norm(encoder_out)
         print("ret.shape: ", ret.shape)
-        ret = self.head(ret)
+        print("ret[:, 0].shape: ", ret[:, 0].shape)
+        ret = self.head(ret[:, 0])
         return ret
 
 
