@@ -181,6 +181,9 @@ def create_model():
         activation_fn="gelu",  # relu or gelu
         fp16=True,
         local_rank=0,
+        image_size=image_size,
+        patch_size=patch_size,
+        in_chans=3,
     )
     model = LSVisionTransformer(transformer_config)
     model.to(dtype=torch.half, device=torch.device("cuda:0"))
