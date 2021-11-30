@@ -89,7 +89,7 @@ class PatchEncoder(torch.nn.Module):
         return Config(**kwargs)
 
     def forward(self, input):
-        rearranged_input = input.view(-1, self.grid_size[0] * self.grid_size[1], self.patch_size[0] * self.patch_size[1] * self.in_chans).contiguous()
+        rearranged_input = input.view(-1, self.grid_size[0] * self.grid_size[1], self.patch_size[0] * self.patch_size[1] * self.in_chans)
         # rearranged_input = einops.rearrange(
         #     input,
         #     "b c (h p1) (w p2) -> b (h w) (p1 p2 c)",
@@ -251,7 +251,7 @@ if __name__ == "__main__":
     start_time = time.time()
     for step, (batch, target) in enumerate(dataloader_train):
         output = model(batch)
-        loss, _ = loss_fn(output, target)
+        loss, _ = loss_fn(output.contiguous(), target)
         loss.backward()
         opt.step()
         step_duration_list.append(time.time() - start_time)
