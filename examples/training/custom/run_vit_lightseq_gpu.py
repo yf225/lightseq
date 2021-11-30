@@ -259,7 +259,7 @@ if __name__ == "__main__":
         output = model(batch)
         print("output.shape: ", output.shape)
         print("target.shape: ", target.shape)
-        loss, _ = loss_fn(output, target)
+        loss = loss_fn(output, target)
         loss.backward()
         opt.step()
         step_duration_list.append(time.time() - start_time)
