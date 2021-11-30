@@ -17,6 +17,7 @@ examples/training/custom/run_vit_lightseq_gpu.py --micro_batch_size=2
 import torch
 import time
 import statistics
+import os
 
 from lightseq.training import LSTransformer, LSCrossEntropyLayer, LSAdam
 
