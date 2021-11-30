@@ -234,7 +234,7 @@ if __name__ == "__main__":
         prefetch_factor=2,
     )
     model = create_model()
-    model = DDp(model, device_ids=[args.rank])
+    model = DDP(model, device_ids=[args.rank])
     loss_fn = create_criterion()
     opt = LSAdam(model.parameters(), lr=1e-5)
 
