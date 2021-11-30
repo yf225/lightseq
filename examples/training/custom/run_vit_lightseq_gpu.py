@@ -132,6 +132,7 @@ class LSVisionTransformer(torch.nn.Module):
             img_size: int
             patch_size: int
             in_chans: int
+            num_classes: int
             padding_idx: int  # value doesn't matter
 
         return Config(**kwargs)
@@ -140,6 +141,8 @@ class LSVisionTransformer(torch.nn.Module):
         encoder_embed_tokens = self.build_embedding(config)
 
         self.encoder = self.build_encoder(config, encoder_embed_tokens)
+        self.norm = torch.nn.LayerNorm(config.hidden_size, eps=1e-6)
+        self.head = nn.Linear(config.hidden_size, config.num_classes)
 
     def build_embedding(self, config):
         emb = PatchEncoder(
@@ -158,7 +161,9 @@ class LSVisionTransformer(torch.nn.Module):
 
     def forward(self, src_tokens):
         encoder_out, _ = self.encoder(src_tokens)
-        return encoder_out
+        ret = self.norm(encoder_out)
+        ret = self.head(ret)
+        return ret
 
 
 def create_model():
