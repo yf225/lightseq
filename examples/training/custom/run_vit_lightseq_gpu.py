@@ -195,6 +195,7 @@ def create_model():
 
 
 def create_criterion():
+    # TODO: re-enable!
     # ce_config = LSCrossEntropyLayer.get_config(
     #     epsilon=0.0,
     #     fp16=True,
