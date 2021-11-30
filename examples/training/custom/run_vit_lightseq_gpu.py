@@ -99,7 +99,6 @@ class PatchEncoder(torch.nn.Module):
         positions = torch.arange(start=0, end=self.num_patches, step=1).to(input.device)
         ret = self.projection(rearranged_input)
         ret = ret + self.position_embedding(positions)
-        print("ret.shape: ", ret.shape)
         return ret
 
 

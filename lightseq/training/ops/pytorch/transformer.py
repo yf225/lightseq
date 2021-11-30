@@ -125,7 +125,8 @@ class LSTransformerEncoder(nn.Module):
     def forward(self, src_tokens):
         x = self.forward_embedding(src_tokens)
 
-        encoder_padding_mask = src_tokens.eq(self.padding_idx)
+        # encoder_padding_mask = src_tokens.eq(self.padding_idx)
+        encoder_padding_mask = torch.ones_like(src_tokens).bool()
 
         for layer in self.layers:
             x = layer(x, encoder_padding_mask)
