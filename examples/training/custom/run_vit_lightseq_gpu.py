@@ -62,7 +62,7 @@ def create_model():
         num_decoder_layer=0,
         intermediate_size=4*hidden_size,  # size of ffn inner size
         max_seq_len=(image_size // patch_size) ** 2,
-        max_batch_tokens=((image_size // patch_size) ** 2) * args.micro_batch_size
+        max_batch_tokens=((image_size // patch_size) ** 2) * args.micro_batch_size,
         attn_prob_dropout_ratio=0.0,  # attention score dropout ratio
         activation_dropout_ratio=0.0,  # ffn activation dropout ratio
         hidden_dropout_ratio=0.0,  # dropout ration before residual
