@@ -186,6 +186,7 @@ def create_model():
         img_size=img_size,
         patch_size=patch_size,
         in_chans=3,
+        num_classes=num_classes,
         padding_idx=1,
     )
     model = LSVisionTransformer(transformer_config)
