@@ -10,7 +10,8 @@ git clone https://github.com/yf225/lightseq.git -b vit_dummy_data
 cd ./lightseq
 
 # TODO: how to get DP running?
-python3 examples/training/custom/run_vit_lightseq_gpu.py
+python -m torch.distributed.launch --nproc_per_node=4 \
+examples/training/custom/run_vit_lightseq_gpu.py --micro_batch_size=2
 """
 
 import torch
@@ -23,6 +24,7 @@ from lightseq.training import LSTransformer, LSCrossEntropyLayer, LSAdam
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--micro_batch_size", type=int)
+parser.add_argument("--local_rank", default=0, type=int)
 args = parser.parse_args()
 
 
