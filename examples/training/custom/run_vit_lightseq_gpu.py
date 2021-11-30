@@ -20,11 +20,7 @@ import statistics
 import os
 from dataclasses import dataclass
 
-from lightseq.training import LSCrossEntropyLayer, LSAdam
-from lightseq.training import (
-    LSTransformerEncoderLayer,
-    LSTransformerDecoderLayer,
-)
+from lightseq.training import LSTransformerEncoder, LSCrossEntropyLayer, LSAdam
 
 
 import argparse
@@ -159,9 +155,6 @@ class LSVisionTransformer(torch.nn.Module):
 
     def build_encoder(self, config, embed_tokens):
         return LSTransformerEncoder(config, embed_tokens)
-
-    def build_decoder(self, config, embed_tokens):
-        return LSTransformerDecoder(config, embed_tokens)
 
     def forward(self, src_tokens, trg_tokens):
         encoder_out, _ = self.encoder(src_tokens)
