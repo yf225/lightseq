@@ -171,7 +171,7 @@ class LSVisionTransformer(torch.nn.Module):
 
 def create_model():
     hidden_size = 1280
-    transformer_config = LSTransformer.get_config(
+    transformer_config = LSVisionTransformer.get_config(
         model="transformer-big",
         nhead=16,  # number of heads in attention
         hidden_size=hidden_size,  # size of transformer hidden layers
@@ -188,7 +188,7 @@ def create_model():
         fp16=True,
         local_rank=0,
     )
-    model = LSTransformer(transformer_config)
+    model = LSVisionTransformer(transformer_config)
     model.to(dtype=torch.half, device=torch.device("cuda:0"))
     return model
 
