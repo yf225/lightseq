@@ -57,8 +57,8 @@ class PatchEncoder(torch.nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        if local_rank >= 0:
-            torch.cuda.set_device(local_rank)
+        if config.local_rank >= 0:
+            torch.cuda.set_device(config.local_rank)
         img_size = (config.img_size, config.img_size)
         patch_size = (config.patch_size, config.patch_size)
         self.patch_size = patch_size
