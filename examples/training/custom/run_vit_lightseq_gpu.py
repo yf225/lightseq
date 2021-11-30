@@ -167,7 +167,7 @@ class LSVisionTransformer(torch.nn.Module):
 def create_model():
     hidden_size = 1280
     transformer_config = LSVisionTransformer.get_config(
-        model="transformer-big",
+        model="vit-h/16",
         nhead=16,  # number of heads in attention
         hidden_size=hidden_size,  # size of transformer hidden layers
         num_encoder_layer=32,
