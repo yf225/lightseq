@@ -19,7 +19,7 @@ import time
 import statistics
 import os
 
-from lightseq.training import LSVisionTransformer, LSCrossEntropyLayer, LSAdam
+from lightseq.training import LSCrossEntropyLayer, LSAdam
 
 
 import argparse
