@@ -10,14 +10,14 @@ git clone https://github.com/yf225/lightseq.git -b vit_dummy_data
 cd ./lightseq
 
 # TODO: how to get DP running?
-python3 run_vit_lightseq_gpu.py
+export PYTHONPATH=
+python3 examples/training/custom/run_vit_lightseq_gpu.py
 """
 
 import torch
 import time
 import statistics
 
-from transformers import BertTokenizer
 from lightseq.training import LSTransformer, LSCrossEntropyLayer, LSAdam
 
 
