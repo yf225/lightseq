@@ -18,6 +18,7 @@ import torch
 import time
 import statistics
 import os
+from dataclasses import dataclass
 
 from lightseq.training import LSCrossEntropyLayer, LSAdam
 
