@@ -14,73 +14,47 @@ python3 run_vit_lightseq_gpu.py
 """
 
 import torch
+import time
+import statistics
 
 from transformers import BertTokenizer
 from lightseq.training import LSTransformer, LSCrossEntropyLayer, LSAdam
 
 
-def create_data():
-    # create Hugging Face tokenizer
-    tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
-    vocab_size = tokenizer.vocab_size
-    sep_id = tokenizer.encode(
-        tokenizer.special_tokens_map["sep_token"], add_special_tokens=False
-    )[0]
-
-    # source text to id
-    src_text = [
-        "What is the fastest library in the world?",
-        "You are so pretty!",
-        "What do you love me for?",
-        "The sparrow outside the window hovering on the telephone pole.",
-    ]
-    src_tokens = tokenizer.batch_encode_plus(
-        src_text, padding=True, return_tensors="pt"
-    )
-    src_tokens = src_tokens["input_ids"].to(torch.device("cuda:0"))
-    batch_size, src_seq_len = src_tokens.size(0), src_tokens.size(1)
-
-    # target text to id
-    trg_text = [
-        "I guess it must be LightSeq, because ByteDance is the fastest.",
-        "Thanks very much and you are pretty too.",
-        "Love your beauty, smart, virtuous and kind.",
-        "You said all this is very summery.",
-    ]
-    trg_tokens = tokenizer.batch_encode_plus(
-        trg_text, padding=True, return_tensors="pt"
-    )
-    trg_tokens = trg_tokens["input_ids"].to(torch.device("cuda:0"))
-    trg_seq_len = trg_tokens.size(1)
-
-    # left shift 1 token as the target output
-    target = trg_tokens.clone()[:, 1:]
-    trg_tokens = trg_tokens[:, :-1]
-
-    return (
-        tokenizer,
-        src_text,
-        src_tokens,
-        trg_text,
-        trg_tokens,
-        target,
-        sep_id,
-        vocab_size,
-        batch_size,
-        src_seq_len,
-        trg_seq_len,
-    )
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--micro_batch_size", type=int)
+args = parser.parse_args()
 
 
-def create_model(vocab_size):
+class VitDummyDataset(torch.utils.data.Dataset):
+    def __init__(self, dataset_size, crop_size, num_classes):
+        self.dataset_size = dataset_size
+        self.crop_size = crop_size
+        self.num_classes = num_classes
+
+    def __len__(self):
+        return self.dataset_size
+
+    def __getitem__(self, index):
+        return (torch.rand(3, self.crop_size, self.crop_size).to(torch.half), torch.randint(self.num_classes, (1,)).to(torch.long))
+
+
+def create_model():
+    hidden_size = 1280
     transformer_config = LSTransformer.get_config(
-        model="transformer-base",
-        max_batch_tokens=2048,
-        max_seq_len=512,
-        vocab_size=vocab_size,
-        padding_idx=0,
-        num_encoder_layer=6,
-        num_decoder_layer=6,
+        model="vit-h/16",
+        nhead=16,  # number of heads in attention
+        hidden_size=hidden_size,  # size of transformer hidden layers
+        num_encoder_layer=32,
+        num_decoder_layer=0,
+        intermediate_size=4*hidden_size,  # size of ffn inner size
+        max_seq_len=196,
+        attn_prob_dropout_ratio=0.0,  # attention score dropout ratio
+        activation_dropout_ratio=0.0,  # ffn activation dropout ratio
+        hidden_dropout_ratio=0.0,  # dropout ration before residual
+        pre_layer_norm=True,  # pre layer norm or post
+        activation_fn="gelu",  # relu or gelu
         fp16=True,
         local_rank=0,
     )
@@ -91,8 +65,6 @@ def create_model(vocab_size):
 
 def create_criterion():
     ce_config = LSCrossEntropyLayer.get_config(
-        max_batch_tokens=2048,
-        padding_idx=0,
         epsilon=0.0,
         fp16=True,
         local_rank=0,
@@ -103,60 +75,29 @@ def create_criterion():
 
 
 if __name__ == "__main__":
-    (
-        tokenizer,
-        src_text,
-        src_tokens,
-        trg_text,
-        trg_tokens,
-        target,
-        sep_id,
-        vocab_size,
-        batch_size,
-        src_seq_len,
-        trg_seq_len,
-    ) = create_data()
-    model = create_model(vocab_size)
+    global_batch_size = args.micro_batch_size * torch.distributed.get_world_size()
+    dataset_train = VitDummyDataset(global_batch_size * 10, 224, 1000)
+    dataloader_train = torch.utils.data.DataLoader(
+        dataset_train,
+        batch_size=global_batch_size,
+        num_workers=2,
+        pin_memory=True,
+        prefetch_factor=2,
+    )
+    model = create_model()
     loss_fn = create_criterion()
     opt = LSAdam(model.parameters(), lr=1e-5)
 
     print("========================TRAIN========================")
     model.train()
-    for epoch in range(2000):
-        output = model(src_tokens, trg_tokens)
+    step_duration_list = []
+    start_time = time.time()
+    for step, batch in enumerate(dataloader_train):
+        output = model(batch)
         loss, _ = loss_fn(output, target)
-        if epoch % 200 == 0:
-            print("epoch {:03d}: {:.3f}".format(epoch, loss.item()))
         loss.backward()
         opt.step()
+        step_duration_list.append(time.time() - start_time)
+        start_time = time.time()
 
-    torch.save(model.state_dict(), "checkpoint.pt")
-    print("model saved.")
-
-    print("========================TEST========================")
-    model.eval()
-    # obtain encoder output and mask
-    encoder_out, encoder_padding_mask = model.encoder(src_tokens)
-    # use the first token as initial target input
-    predict_tokens = trg_tokens[:, :1]
-    cache = {}
-    for _ in range(trg_seq_len - 1):
-        # use cache to accelerate the inference
-        output = model.decoder(
-            predict_tokens[:, -1:], encoder_out, encoder_padding_mask, cache
-        )
-        # predict the next token
-        output = torch.reshape(torch.argmax(output, dim=-1), (batch_size, -1))
-        # concatenate the next token with previous tokens
-        predict_tokens = torch.cat([predict_tokens, output], dim=-1)
-    # pad all tokens after [SEP]
-    mask = torch.cumsum(torch.eq(predict_tokens, sep_id).int(), dim=1)
-    predict_tokens = predict_tokens.masked_fill(mask > 0, sep_id)
-    # predict id to text
-    predict_text = tokenizer.batch_decode(predict_tokens, skip_special_tokens=True)
-    print(">>>>> source text")
-    print("\n".join(src_text))
-    print(">>>>> target text")
-    print("\n".join(trg_text))
-    print(">>>>> predict text")
-    print("\n".join(predict_text))
+    print(statistics.median(step_duration_list))
