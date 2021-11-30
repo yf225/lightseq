@@ -89,9 +89,6 @@ class PatchEncoder(torch.nn.Module):
         return Config(**kwargs)
 
     def forward(self, input):
-        print("len(input): ", len(input))
-        print("input[0].shape: ", input[0].shape)
-        print("input[1].shape: ", input[1].shape)
         rearranged_input = input.view(-1, self.grid_size[0] * self.grid_size[1], self.patch_size[0] * self.patch_size[1] * self.in_chans)
         # rearranged_input = einops.rearrange(
         #     input,
@@ -102,6 +99,7 @@ class PatchEncoder(torch.nn.Module):
         positions = torch.arange(start=0, end=self.num_patches, step=1).to(input.device)
         ret = self.projection(rearranged_input)
         ret = ret + self.position_embedding(positions)
+        print("ret.shape: ", ret.shape)
         return ret
 
 
