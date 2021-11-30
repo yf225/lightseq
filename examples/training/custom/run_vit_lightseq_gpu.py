@@ -9,7 +9,6 @@ rm -rf ./lightseq || true
 git clone https://github.com/yf225/lightseq.git -b vit_dummy_data
 cd ./lightseq
 
-# TODO: how to get DP running?
 python -m torch.distributed.launch --nproc_per_node=4 \
 examples/training/custom/run_vit_lightseq_gpu.py --micro_batch_size=2
 """
@@ -243,7 +242,7 @@ if __name__ == "__main__":
     model.train()
     step_duration_list = []
     start_time = time.time()
-    for step, batch in enumerate(dataloader_train):
+    for step, (batch, target) in enumerate(dataloader_train):
         output = model(batch)
         loss, _ = loss_fn(output, target)
         loss.backward()
