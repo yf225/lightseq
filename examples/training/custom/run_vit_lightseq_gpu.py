@@ -191,7 +191,7 @@ def create_model():
         padding_idx=1,
     )
     model = LSVisionTransformer(transformer_config)
-    model.to(dtype=torch.half, device=torch.device("cuda:0"))
+    model = model.to(dtype=torch.half).cuda()
     return model
 
 
@@ -204,7 +204,7 @@ def create_criterion():
         padding_idx=0,
     )
     loss_fn = LSCrossEntropyLayer(ce_config)
-    loss_fn.to(dtype=torch.half, device=torch.device("cuda:0"))
+    loss_fn = loss_fn.to(dtype=torch.half).cuda()
     return loss_fn
 
 
