@@ -293,7 +293,9 @@ class LSTransformerEncoderLayer(nn.Module):
         else:
             assert bs == encoder_padding_mask.size(
                 0
-            ) and sl == encoder_padding_mask.size(1)
+            ) and sl == encoder_padding_mask.size(1), "bs: {}, encoder_padding_mask.size(0): {}, sl: {}, encoder_padding_mask.size(1): {}".format(
+                bs, encoder_padding_mask.size(0), sl, encoder_padding_mask.size(1)
+            )
         output = LSTransformerEncoderFunc.apply(
             hidden_states,
             encoder_padding_mask,
