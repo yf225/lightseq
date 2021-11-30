@@ -89,7 +89,7 @@ class PatchEncoder(torch.nn.Module):
 
     def forward(self, input):
         print("len(input): ", len(input))
-        print("input[0]: ", input[0])
+        print("input[0].shape: ", input[0].shape)
         rearranged_input = input.view(-1, self.grid_size[0] * self.grid_size[1], self.patch_size[0] * self.patch_size[1] * self.in_chans)
         # rearranged_input = einops.rearrange(
         #     input,
