@@ -204,7 +204,7 @@ def create_criterion():
     #     padding_idx=0,
     # )
     # loss_fn = LSCrossEntropyLayer(ce_config)
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = torch.nn.CrossEntropyLoss()
     loss_fn = loss_fn.to(dtype=torch.half).cuda()
     return loss_fn
 
