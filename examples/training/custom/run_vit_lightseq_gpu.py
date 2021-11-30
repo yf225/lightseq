@@ -197,16 +197,15 @@ def create_model():
 
 
 def create_criterion():
-    # TODO: re-enable!
-    # ce_config = LSCrossEntropyLayer.get_config(
-    #     epsilon=0.0,
-    #     fp16=True,
-    #     local_rank=-1,
-    #     max_batch_tokens=((img_size // patch_size) ** 2) * args.micro_batch_size * torch.distributed.get_world_size(),
-    #     padding_idx=0,
-    # )
-    # loss_fn = LSCrossEntropyLayer(ce_config)
-    loss_fn = torch.nn.CrossEntropyLoss()
+    ce_config = LSCrossEntropyLayer.get_config(
+        epsilon=0.0,
+        fp16=True,
+        local_rank=-1,
+        max_batch_tokens=((img_size // patch_size) ** 2) * args.micro_batch_size * torch.distributed.get_world_size(),
+        padding_idx=0,
+    )
+    loss_fn = LSCrossEntropyLayer(ce_config)
+    # loss_fn = torch.nn.CrossEntropyLoss()
     loss_fn = loss_fn.to(dtype=torch.half).cuda()
     return loss_fn
 
@@ -260,8 +259,8 @@ if __name__ == "__main__":
     step_duration_list = []
     start_time = time.time()
     for step, (batch, target) in enumerate(dataloader_train):
-        output = model(batch).contiguous()
-        target = target.contiguous()
+        output = model(batch)
+        target = target
         print("output.shape: ", output.shape)
         print("target.shape: ", target.shape)
         loss, _ = loss_fn(output, target)
