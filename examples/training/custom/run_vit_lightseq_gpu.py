@@ -134,12 +134,6 @@ class LSVisionTransformer(torch.nn.Module):
             patch_size: int
             in_chans: int
 
-        if "model" in kwargs:
-            if kwargs["model"] not in MODEL_ARCH:
-                raise ValueError("{} architecture is not supported.")
-            MODEL_ARCH[kwargs["model"]](kwargs)
-            del kwargs["model"]
-
         return Config(**kwargs)
 
     def build_model(self, config):
