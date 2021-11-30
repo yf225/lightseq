@@ -9,7 +9,7 @@ rm -rf ./lightseq || true
 git clone https://github.com/yf225/lightseq.git -b vit_dummy_data
 cd ./lightseq
 
-export PYTHONPATH=/fsx/users/willfeng/repos:${PYTHONPATH}
+export PYTHONPATH=/fsx/users/willfeng/repos/pytorch-image-models:${PYTHONPATH}
 python -m torch.distributed.launch --nproc_per_node=4 \
 examples/training/custom/run_vit_lightseq_gpu.py --micro_batch_size=2
 """
