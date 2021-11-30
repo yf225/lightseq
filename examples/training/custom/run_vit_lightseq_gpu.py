@@ -28,6 +28,17 @@ parser.add_argument("--micro_batch_size", type=int)
 parser.add_argument("--local_rank", default=0, type=int)
 
 
+num_attention_heads = 16
+hidden_size = 1280
+num_layers = 32
+
+image_size = 224
+patch_size = 16  # Size of the patches to be extract from the input images
+
+num_classes = 1000
+num_epochs = 10
+
+
 class VitDummyDataset(torch.utils.data.Dataset):
     def __init__(self, dataset_size, crop_size, num_classes):
         self.dataset_size = dataset_size
@@ -44,13 +55,14 @@ class VitDummyDataset(torch.utils.data.Dataset):
 def create_model():
     hidden_size = 1280
     transformer_config = LSTransformer.get_config(
-        model="bert-big",
+        model="transformer-big",
         nhead=16,  # number of heads in attention
         hidden_size=hidden_size,  # size of transformer hidden layers
         num_encoder_layer=32,
         num_decoder_layer=0,
         intermediate_size=4*hidden_size,  # size of ffn inner size
-        max_seq_len=196,
+        max_seq_len=(image_size // patch_size) ** 2,
+        max_batch_tokens=((image_size // patch_size) ** 2) * args.micro_batch_size
         attn_prob_dropout_ratio=0.0,  # attention score dropout ratio
         activation_dropout_ratio=0.0,  # ffn activation dropout ratio
         hidden_dropout_ratio=0.0,  # dropout ration before residual
@@ -58,6 +70,8 @@ def create_model():
         activation_fn="gelu",  # relu or gelu
         fp16=True,
         local_rank=0,
+        vocab_size=(image_size // patch_size) ** 2,
+        padding_idx=0,
     )
     model = LSTransformer(transformer_config)
     model.to(dtype=torch.half, device=torch.device("cuda:0"))
@@ -97,7 +111,7 @@ if __name__ == "__main__":
     assert args.rank >= 0
 
     global_batch_size = args.micro_batch_size * torch.distributed.get_world_size()
-    dataset_train = VitDummyDataset(global_batch_size * 10, 224, 1000)
+    dataset_train = VitDummyDataset(global_batch_size * 10, image_size, num_classes)
     dataloader_train = torch.utils.data.DataLoader(
         dataset_train,
         batch_size=global_batch_size,
