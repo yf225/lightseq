@@ -206,14 +206,22 @@ def create_criterion():
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    assert int(os.environ['WORLD_SIZE']) > 1
-    args.device = 'cuda:%d' % args.local_rank
-    torch.cuda.set_device(args.local_rank)
-    torch.distributed.init_process_group(backend='nccl', init_method='env://')
-    args.world_size = torch.distributed.get_world_size()
-    args.rank = torch.distributed.get_rank()
-    print('Training in distributed mode with multiple processes, 1 GPU per process. Process %d, total %d.'
-                    % (args.rank, args.world_size))
+    args.distributed = False
+    if 'WORLD_SIZE' in os.environ:
+        args.distributed = int(os.environ['WORLD_SIZE']) > 1
+    args.device = 'cuda:0'
+    args.world_size = 1
+    args.rank = 0  # global rank
+    if args.distributed:
+        args.device = 'cuda:%d' % args.local_rank
+        torch.cuda.set_device(args.local_rank)
+        torch.distributed.init_process_group(backend='nccl', init_method='env://')
+        args.world_size = torch.distributed.get_world_size()
+        args.rank = torch.distributed.get_rank()
+        print_if_verbose('Training in distributed mode with multiple processes, 1 GPU per process. Process %d, total %d.'
+                     % (args.rank, args.world_size))
+    else:
+        print_if_verbose('Training with a single process on 1 GPUs.')
     assert args.rank >= 0
 
     global_batch_size = args.micro_batch_size * torch.distributed.get_world_size()
@@ -226,7 +234,8 @@ if __name__ == "__main__":
         prefetch_factor=2,
     )
     model = create_model()
-    model = DDP(model, device_ids=[args.rank])
+    if args.distributed:
+        model = DDP(model, device_ids=[args.local_rank])
     loss_fn = create_criterion()
     opt = LSAdam(model.parameters(), lr=1e-5)
 
