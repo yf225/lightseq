@@ -90,10 +90,10 @@ if __name__ == "__main__":
         torch.distributed.init_process_group(backend='nccl', init_method='env://')
         args.world_size = torch.distributed.get_world_size()
         args.rank = torch.distributed.get_rank()
-        print_if_verbose('Training in distributed mode with multiple processes, 1 GPU per process. Process %d, total %d.'
+        print('Training in distributed mode with multiple processes, 1 GPU per process. Process %d, total %d.'
                      % (args.rank, args.world_size))
     else:
-        print_if_verbose('Training with a single process on 1 GPUs.')
+        print('Training with a single process on 1 GPUs.')
     assert args.rank >= 0
 
     global_batch_size = args.micro_batch_size * torch.distributed.get_world_size()
