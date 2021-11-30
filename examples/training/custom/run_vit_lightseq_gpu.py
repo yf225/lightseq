@@ -20,7 +20,8 @@ import statistics
 import os
 from dataclasses import dataclass
 
-from lightseq.training import LSTransformerEncoder, LSCrossEntropyLayer, LSAdam
+from lightseq.training import LSCrossEntropyLayer, LSAdam
+from lightseq.training.ops.pytorch import LSTransformerEncoder
 
 
 import argparse
