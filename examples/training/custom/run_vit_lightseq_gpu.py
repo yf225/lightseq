@@ -99,7 +99,7 @@ class PatchEncoder(torch.nn.Module):
         return ret
 
 
-class LSVisionTransformer(nn.Module):
+class LSVisionTransformer(torch.nn.Module):
     def __init__(self, config):
         super(LSVisionTransformer, self).__init__()
         self.config = config
