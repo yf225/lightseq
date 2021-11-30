@@ -6,7 +6,7 @@ pip install lightseq fairseq sacremoses
 
 cd /fsx/users/willfeng/repos
 rm -rf ./lightseq || true
-git clone https://github.com/yf225/lightseq.git
+git clone https://github.com/yf225/lightseq.git -b vit_dummy_data
 cd ./lightseq
 
 # TODO: how to get DP running?
