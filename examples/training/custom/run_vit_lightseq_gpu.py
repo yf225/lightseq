@@ -247,7 +247,8 @@ if __name__ == "__main__":
     if args.distributed:
         model = DDP(model, device_ids=[args.local_rank])
     loss_fn = create_criterion()
-    opt = LSAdam(model.parameters(), lr=1e-5)
+    # opt = LSAdam(model.parameters(), lr=1e-5)
+    opt = torch.optim.Adam(model.parameters(), lr=1e-5)
 
     print("========================TRAIN========================")
     model.train()
