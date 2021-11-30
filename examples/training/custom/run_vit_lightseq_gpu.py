@@ -195,14 +195,15 @@ def create_model():
 
 
 def create_criterion():
-    ce_config = LSCrossEntropyLayer.get_config(
-        epsilon=0.0,
-        fp16=True,
-        local_rank=-1,
-        max_batch_tokens=((img_size // patch_size) ** 2) * args.micro_batch_size * torch.distributed.get_world_size(),
-        padding_idx=0,
-    )
-    loss_fn = LSCrossEntropyLayer(ce_config)
+    # ce_config = LSCrossEntropyLayer.get_config(
+    #     epsilon=0.0,
+    #     fp16=True,
+    #     local_rank=-1,
+    #     max_batch_tokens=((img_size // patch_size) ** 2) * args.micro_batch_size * torch.distributed.get_world_size(),
+    #     padding_idx=0,
+    # )
+    # loss_fn = LSCrossEntropyLayer(ce_config)
+    loss_fn = nn.CrossEntropyLoss()
     loss_fn = loss_fn.to(dtype=torch.half).cuda()
     return loss_fn
 
