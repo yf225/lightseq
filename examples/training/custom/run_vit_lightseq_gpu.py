@@ -162,6 +162,7 @@ class LSVisionTransformer(torch.nn.Module):
     def forward(self, src_tokens):
         encoder_out, _ = self.encoder(src_tokens)
         ret = self.norm(encoder_out)
+        print("ret.shape: ", ret.shape)
         ret = self.head(ret)
         return ret
 
