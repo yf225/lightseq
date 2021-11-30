@@ -158,7 +158,7 @@ class LSVisionTransformer(torch.nn.Module):
     def build_encoder(self, config, embed_tokens):
         return LSTransformerEncoder(config, embed_tokens)
 
-    def forward(self, src_tokens, trg_tokens):
+    def forward(self, src_tokens):
         encoder_out, _ = self.encoder(src_tokens)
         return encoder_out
 
