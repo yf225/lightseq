@@ -232,21 +232,21 @@ if __name__ == "__main__":
 
     global_batch_size = args.micro_batch_size * torch.distributed.get_world_size()
     dataset_train = VitDummyDataset(global_batch_size * 10, img_size, num_classes)
-    # dataloader_train = torch.utils.data.DataLoader(
-    #     dataset_train,
-    #     batch_size=args.micro_batch_size,
-    #     num_workers=2,
-    #     pin_memory=True,
-    #     prefetch_factor=2,
-    # )
-    dataloader_train = create_loader(
+    dataloader_train = torch.utils.data.DataLoader(
         dataset_train,
-        input_size=(3, img_size, img_size),
-        batch_size=args.micro_batch_size * torch.distributed.get_world_size(),
-        is_training=True,
-        no_aug=True,
-        fp16=True,
+        batch_size=args.micro_batch_size,
+        num_workers=2,
+        pin_memory=True,
+        prefetch_factor=2,
     )
+    # dataloader_train = create_loader(
+    #     dataset_train,
+    #     input_size=(3, img_size, img_size),
+    #     batch_size=args.micro_batch_size * torch.distributed.get_world_size(),
+    #     is_training=True,
+    #     no_aug=True,
+    #     fp16=True,
+    # )
     model = create_model()
     if args.distributed:
         model = DDP(model, device_ids=[args.local_rank])
