@@ -52,6 +52,123 @@ class VitDummyDataset(torch.utils.data.Dataset):
         return (torch.rand(3, self.crop_size, self.crop_size).to(torch.half), torch.randint(self.num_classes, (1,)).to(torch.long))
 
 
+class PatchEncoder(torch.nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        if local_rank >= 0:
+            torch.cuda.set_device(local_rank)
+        img_size = (config.img_size, config.img_size)
+        patch_size = (config.patch_size, config.patch_size)
+        self.patch_size = patch_size
+        self.in_chans = config.in_chans
+        self.flatten_dim = self.patch_size[0] * self.patch_size[1] * self.in_chans
+        self.img_size = img_size
+        self.grid_size = (img_size[0] // patch_size[0], img_size[1] // patch_size[1])
+        self.num_patches = self.grid_size[0] * self.grid_size[1]
+        self.projection = torch.nn.Linear(
+            self.flatten_dim, config.embedding_dim
+        )
+        self.position_embedding = torch.nn.Embedding(
+            num_embeddings=self.num_patches, embedding_dim=config.embedding_dim
+        )
+
+    @staticmethod
+    def get_config(**kwargs):
+        @dataclass
+        class Config:
+            embedding_dim: int
+            img_size: int
+            patch_size: int
+            in_chans: int
+            embedding_dim: int
+            local_rank: int
+        return Config(**kwargs)
+
+    def forward(self, input):
+        rearranged_input = input.view(-1, self.grid_size[0] * self.grid_size[1], self.patch_size[0] * self.patch_size[1] * self.in_chans)
+        # rearranged_input = einops.rearrange(
+        #     input,
+        #     "b c (h p1) (w p2) -> b (h w) (p1 p2 c)",
+        #     p1=self.patch_size[0],
+        #     p2=self.patch_size[1],
+        # )
+        positions = torch.arange(start=0, end=self.num_patches, step=1).to(input.device)
+        ret = self.projection(rearranged_input)
+        ret = ret + self.position_embedding(positions)
+        return ret
+
+
+class LSVisionTransformer(nn.Module):
+    def __init__(self, config):
+        super(LSVisionTransformer, self).__init__()
+        self.config = config
+
+        print("Lightseq Transformer config is ", self.config.__dict__)
+
+        if self.config.local_rank >= 0:
+            torch.cuda.set_device(self.config.local_rank)
+
+        self.build_model(self.config)
+
+    @staticmethod
+    def get_config(**kwargs):
+        @dataclass
+        class Config:
+            max_batch_tokens: int  # max batch token numbers
+            max_seq_len: int  # max sequence length
+            num_encoder_layer: int  # number of encoder layer
+            num_decoder_layer: int  # number of decoder layer
+            hidden_size: int  # size of transformer hidden layers
+            intermediate_size: int  # size of ffn inner size
+            nhead: int  # number of heads in attention
+            attn_prob_dropout_ratio: float  # attention score dropout ratio
+            activation_dropout_ratio: float  # ffn activation dropout ratio
+            hidden_dropout_ratio: float  # dropout ration before residual
+            pre_layer_norm: bool  # pre layer norm or post
+            activation_fn: str  # relu or gelu
+            fp16: bool  # fp16 presion
+            local_rank: int  # rank in local node
+            image_size: int
+            patch_size: int
+            in_chans: int
+
+        if "model" in kwargs:
+            if kwargs["model"] not in MODEL_ARCH:
+                raise ValueError("{} architecture is not supported.")
+            MODEL_ARCH[kwargs["model"]](kwargs)
+            del kwargs["model"]
+
+        return Config(**kwargs)
+
+    def build_model(self, config):
+        encoder_embed_tokens = self.build_embedding(config)
+
+        self.encoder = self.build_encoder(config, encoder_embed_tokens)
+
+    def build_embedding(self, config):
+        emb = PatchEncoder(
+            PatchEncoder.get_config(
+                img_size=config.img_size,
+                patch_size=config.patch_size,
+                in_chans=config.in_chans,
+                embedding_dim=config.hidden_size,
+                local_rank=config.local_rank,
+            )
+        )
+        return emb
+
+    def build_encoder(self, config, embed_tokens):
+        return LSTransformerEncoder(config, embed_tokens)
+
+    def build_decoder(self, config, embed_tokens):
+        return LSTransformerDecoder(config, embed_tokens)
+
+    def forward(self, src_tokens, trg_tokens):
+        encoder_out, _ = self.encoder(src_tokens)
+        return encoder_out
+
+
 def create_model():
     hidden_size = 1280
     transformer_config = LSTransformer.get_config(
